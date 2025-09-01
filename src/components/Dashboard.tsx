@@ -3,57 +3,40 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MedicationCard } from "./MedicationCard";
 import { AddMedicationDialog } from "./AddMedicationDialog";
+import { useMedications } from "@/hooks/useMedications";
+import { useAuth } from "@/hooks/useAuth";
 import { Plus, Calendar, TrendingUp, Clock } from "lucide-react";
 
-// Mock data - in real app this would come from backend
-const mockMedications = [
-  {
-    id: 1,
-    name: "Lisinopril",
-    dosage: "10mg",
-    frequency: "Once daily",
-    nextTime: "8:00 AM",
-    taken: false
-  },
-  {
-    id: 2,
-    name: "Metformin",
-    dosage: "500mg",
-    frequency: "Twice daily",
-    nextTime: "12:00 PM",
-    taken: true
-  },
-  {
-    id: 3,
-    name: "Vitamin D3",
-    dosage: "1000 IU",
-    frequency: "Once daily",
-    nextTime: "8:00 AM",
-    taken: false
-  }
-];
-
 export const Dashboard = () => {
-  const [medications, setMedications] = useState(mockMedications);
+  const { user } = useAuth();
+  const { medications, logs, loading, logMedication, isMedicationTakenToday } = useMedications();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const handleMarkTaken = (id: number) => {
-    setMedications(prev => 
-      prev.map(med => med.id === id ? { ...med, taken: true } : med)
-    );
+  const handleMarkTaken = (medicationId: string) => {
+    logMedication(medicationId, true);
   };
 
-  const handleMarkSkipped = (id: number) => {
-    // In real app, this would log the skip
-    console.log(`Medication ${id} skipped`);
+  const handleMarkSkipped = (medicationId: string) => {
+    logMedication(medicationId, false, "User marked as skipped");
   };
 
+  // Calculate today's stats
   const todayStats = {
-    taken: medications.filter(med => med.taken).length,
+    taken: logs.filter(log => log.taken).length,
     total: medications.length,
-    upcoming: medications.filter(med => !med.taken).length,
-    adherence: Math.round((medications.filter(med => med.taken).length / medications.length) * 100)
+    upcoming: medications.filter(med => !isMedicationTakenToday(med.id)).length,
+    adherence: medications.length > 0 ? Math.round((logs.filter(log => log.taken).length / medications.length) * 100) : 0
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading your medications...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
@@ -127,18 +110,27 @@ export const Dashboard = () => {
       <div className="space-y-4">
         <h2 className="text-2xl font-semibold text-foreground">Today's Medications</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {medications.map((medication) => (
-            <MedicationCard
-              key={medication.id}
-              name={medication.name}
-              dosage={medication.dosage}
-              frequency={medication.frequency}
-              nextTime={medication.nextTime}
-              taken={medication.taken}
-              onMarkTaken={() => handleMarkTaken(medication.id)}
-              onMarkSkipped={() => handleMarkSkipped(medication.id)}
-            />
-          ))}
+          {medications.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground mb-4">No medications added yet.</p>
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                Add Your First Medication
+              </Button>
+            </div>
+          ) : (
+            medications.map((medication) => (
+              <MedicationCard
+                key={medication.id}
+                name={medication.name}
+                dosage={medication.dosage}
+                frequency={medication.frequency}
+                nextTime={medication.time_of_day}
+                taken={isMedicationTakenToday(medication.id)}
+                onMarkTaken={() => handleMarkTaken(medication.id)}
+                onMarkSkipped={() => handleMarkSkipped(medication.id)}
+              />
+            ))
+          )}
         </div>
       </div>
 

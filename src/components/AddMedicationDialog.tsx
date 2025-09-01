@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useMedications } from "@/hooks/useMedications";
 
 interface AddMedicationDialogProps {
   open: boolean;
@@ -12,6 +13,7 @@ interface AddMedicationDialogProps {
 }
 
 export const AddMedicationDialog = ({ open, onOpenChange }: AddMedicationDialogProps) => {
+  const { addMedication } = useMedications();
   const [formData, setFormData] = useState({
     name: "",
     dosage: "",
@@ -19,13 +21,23 @@ export const AddMedicationDialog = ({ open, onOpenChange }: AddMedicationDialogP
     time: "",
     notes: ""
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In real app, this would save to backend
-    console.log("Adding medication:", formData);
+    setLoading(true);
+    
+    await addMedication({
+      name: formData.name,
+      dosage: formData.dosage,
+      frequency: formData.frequency,
+      time_of_day: formData.time,
+      notes: formData.notes || undefined,
+    });
+    
     onOpenChange(false);
     setFormData({ name: "", dosage: "", frequency: "", time: "", notes: "" });
+    setLoading(false);
   };
 
   return (
@@ -122,14 +134,16 @@ export const AddMedicationDialog = ({ open, onOpenChange }: AddMedicationDialogP
               variant="outline"
               onClick={() => onOpenChange(false)}
               className="flex-1"
+              disabled={loading}
             >
               Cancel
             </Button>
             <Button
               type="submit"
               className="flex-1 bg-primary hover:bg-primary-dark text-primary-foreground"
+              disabled={loading}
             >
-              Add Medication
+              {loading ? "Adding..." : "Add Medication"}
             </Button>
           </div>
         </form>

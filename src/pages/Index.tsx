@@ -1,10 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { Dashboard } from "@/components/Dashboard";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState("home");
+
+  useEffect(() => {
+    if (location.pathname === "/dashboard") {
+      if (!loading && !user) {
+        navigate("/auth");
+      } else if (user) {
+        setCurrentView("dashboard");
+      }
+    } else {
+      setCurrentView("home");
+    }
+  }, [location.pathname, user, loading, navigate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -12,7 +29,7 @@ const Index = () => {
       
       {currentView === "home" && (
         <>
-          <Hero onNavigate={setCurrentView} />
+          <Hero />
           
           {/* Features Section */}
           <section className="py-20 px-4">
@@ -75,7 +92,7 @@ const Index = () => {
               
               <div className="text-center">
                 <button
-                  onClick={() => setCurrentView("dashboard")}
+                  onClick={() => navigate("/dashboard")}
                   className="bg-primary hover:bg-primary-dark text-primary-foreground px-8 py-4 rounded-lg text-lg font-medium transition-colors"
                 >
                   Try Dashboard Demo
@@ -90,7 +107,7 @@ const Index = () => {
         <div className="pt-8">
           <div className="container mx-auto px-4 mb-6">
             <button
-              onClick={() => setCurrentView("home")}
+              onClick={() => navigate("/")}
               className="text-primary hover:text-primary-dark transition-colors"
             >
               ← Back to Home
