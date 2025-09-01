@@ -36,30 +36,22 @@ Mark as taken
 
 Mobile-first responsive design
 
+## ⚙️ How It Works
 
-##⚙️ How It Works
+1. **Add Medications**  
+   - Enter the medication name, dosage, and the time you need to take it.  
 
-**Add Medications**
+2. **Get Reminders**  
+   - The app notifies you when it’s time to take your medication (via in-app reminders, and can be extended with push/email).  
 
-Enter the medication name, dosage, and the time you need to take it.
+3. **Track Adherence**  
+   - Mark medications as **Taken** with a single tap.  
+   - Stay accountable and build consistent habits.  
 
-**Get Reminders**
+4. **View History**  
+   - See your daily and weekly medication log.  
+   - Simple dashboard to help you or your caregiver monitor progress.  
 
-The app notifies you when it’s time to take your medication (via in-app reminders, and can be extended with push/email).
-
-**Track Adherence**
-
-Mark medications as Taken with a single tap.
-
-Stay accountable and build consistent habits.
-
-**View History**
-
-See your daily and weekly medication log.
-
-Simple dashboard to help you or your caregiver monitor progress.
-
-**Stay Consistent**
-
-Designed with a clean UI and mobile-first layout, so it’s easy to use for all ages.
+5. **Stay Consistent**  
+   - Designed with a **clean UI and mobile-first layout**, so it’s easy to use for all ages.  
 
