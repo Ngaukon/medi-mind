@@ -1,7 +1,11 @@
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-image.jpg";
 
-export const Hero = () => {
+interface HeroProps {
+  onNavigate: (view: string) => void;
+}
+
+export const Hero = ({ onNavigate }: HeroProps) => {
   return (
     <section className="relative bg-gradient-to-br from-primary-light to-background py-20 px-4">
       <div className="container mx-auto max-w-6xl">
@@ -19,10 +23,19 @@ export const Hero = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-primary hover:bg-primary-dark text-primary-foreground px-8 py-4 text-lg">
+              <Button 
+                size="lg" 
+                className="bg-primary hover:bg-primary-dark text-primary-foreground px-8 py-4 text-lg"
+                onClick={() => onNavigate("dashboard")}
+              >
                 Get Started Free
               </Button>
-              <Button variant="outline" size="lg" className="border-primary text-primary hover:bg-primary-light px-8 py-4 text-lg">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="border-primary text-primary hover:bg-primary-light px-8 py-4 text-lg"
+                onClick={() => onNavigate("dashboard")}
+              >
                 View Dashboard
               </Button>
             </div>

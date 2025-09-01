@@ -12,7 +12,7 @@ const Index = () => {
       
       {currentView === "home" && (
         <>
-          <Hero />
+          <Hero onNavigate={setCurrentView} />
           
           {/* Features Section */}
           <section className="py-20 px-4">
