@@ -25,15 +25,24 @@ export const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-foreground hover:text-primary transition-colors">
+            <button 
+              onClick={() => navigate("/features")}
+              className="text-foreground hover:text-primary transition-colors"
+            >
               Features
-            </a>
-            <a href="#dashboard" className="text-foreground hover:text-primary transition-colors">
+            </button>
+            <button 
+              onClick={() => navigate("/dashboard")}
+              className="text-foreground hover:text-primary transition-colors"
+            >
               Dashboard
-            </a>
-            <a href="#about" className="text-foreground hover:text-primary transition-colors">
+            </button>
+            <button 
+              onClick={() => navigate("/about")}
+              className="text-foreground hover:text-primary transition-colors"
+            >
               About
-            </a>
+            </button>
           </div>
 
           <div className="flex items-center space-x-4">
