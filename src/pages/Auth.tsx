@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,41 +7,69 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
 
 const Auth = () => {
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [signupForm, setSignupForm] = useState({ email: '', password: '', fullName: '' });
   const [loading, setLoading] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
 
-  // Redirect if already authenticated
+  // Check if this is an email confirmation
   useEffect(() => {
-    if (user) {
+    const hash = window.location.hash;
+    if (hash.includes('access_token') || hash.includes('refresh_token')) {
+      setIsConfirming(true);
+      // Don't redirect immediately, let auth state handle it
+    }
+  }, []);
+
+  // Redirect if already authenticated (but not during confirmation)
+  useEffect(() => {
+    if (user && !authLoading && !isConfirming) {
       navigate('/dashboard');
     }
-  }, [user, navigate]);
+  }, [user, authLoading, isConfirming, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signIn(loginForm.email, loginForm.password);
-    
-    if (error) {
+    try {
+      const { error } = await signIn(loginForm.email, loginForm.password);
+      
+      if (error) {
+        let errorMessage = error.message;
+        
+        // Provide user-friendly error messages
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Please check your email and click the confirmation link before signing in.';
+        } else if (error.message.includes('Too many requests')) {
+          errorMessage = 'Too many login attempts. Please wait a moment before trying again.';
+        }
+        
+        toast({
+          title: "Login failed",
+          description: errorMessage,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Welcome back!",
+          description: "You've been signed in successfully."
+        });
+        // Let auth state handler handle redirect
+      }
+    } catch (err) {
       toast({
         title: "Login failed",
-        description: error.message,
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
-    } else {
-      toast({
-        title: "Welcome back!",
-        description: "You've been signed in successfully."
-      });
-      navigate('/dashboard');
     }
     
     setLoading(false);
@@ -51,23 +79,61 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signUp(signupForm.email, signupForm.password, signupForm.fullName);
-    
-    if (error) {
+    try {
+      const { error } = await signUp(signupForm.email, signupForm.password, signupForm.fullName);
+      
+      if (error) {
+        let errorMessage = error.message;
+        
+        // Provide user-friendly error messages
+        if (error.message.includes('User already registered')) {
+          errorMessage = 'An account with this email already exists. Please sign in instead.';
+        } else if (error.message.includes('Password should be at least')) {
+          errorMessage = 'Password should be at least 6 characters long.';
+        } else if (error.message.includes('Invalid email')) {
+          errorMessage = 'Please enter a valid email address.';
+        }
+        
+        toast({
+          title: "Signup failed",
+          description: errorMessage,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Account created!",
+          description: "Please check your email and click the confirmation link to complete your registration.",
+          duration: 10000 // Show longer for important message
+        });
+        // Clear form after successful signup
+        setSignupForm({ email: '', password: '', fullName: '' });
+      }
+    } catch (err) {
       toast({
         title: "Signup failed",
-        description: error.message,
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
-      });
-    } else {
-      toast({
-        title: "Account created!",
-        description: "Please check your email to verify your account."
       });
     }
     
     setLoading(false);
   };
+
+  // Show confirmation message if user is in confirmation process
+  if (isConfirming && authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle>Confirming your account...</CardTitle>
+            <CardDescription>
+              Please wait while we verify your email confirmation.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
